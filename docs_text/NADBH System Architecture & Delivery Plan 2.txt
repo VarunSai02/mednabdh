@@ -1,0 +1,157 @@
+NABDH MVP: Technical Delivery Plan & Architecture
+Version: 1.0 (Jan 2026)
+Region: Azure UAE North (Mandatory)
+
+1. System Architecture Overview
+The architecture is designed as a "Clinical AI Layer" that sits on top of existing clinic workflows. It is optimized for high-speed Arabic transcription and clinical structuring.
+1.1 High-Level Architecture
+The 5-Step Architecture Flow
+1. The Capture Layer (Frontend to API Gateway)
+The doctor interacts with a React-based Doctor Portal. When the "Record" button is pressed, the encrypted audio stream is sent via the Azure API Gateway.
+Security Check: The Gateway verifies the doctor’s session via Azure Entra ID and checks if the patient consent checkbox was ticked.
+Initial Logging: The Audit Service creates a "Visit Entry" in the PostgreSQL database, marking the start of the clinical encounter.
+2. The Arabic ASR Engine (Speech-to-Text)
+The raw audio is pushed to a specialized Arabic ASR (Automatic Speech Recognition) Service hosted on Azure GPU instances in the UAE.
+Context Awareness: Unlike general voice-to-text, this engine is tuned for GCC dialects and medical terminology (e.g., recognizing "Sukkari" as Diabetes).
+Output: It generates a raw, timestamped transcript. Raw media file is stored in Azure Blob Storage & transcript (text) format in Azure PostgreSQL. 
+3. The Clinical Structuring Engine (LLM Layer)
+The raw transcript is sent to a Local LLM (Large Language Model). This is the "brain" of NABDH. Start with Azure Open AI (UAE) LLM for Pilot & we will extend/replace it with more accurate local LLM like Med42, Falcon H1 etc.
+Transformation: It parses the conversation into the SOAP format (Subjective, Objective, Assessment, Plan).
+Arabic-to-English Mapping: Often, while the conversation is in Arabic, the final medical report needs to be in English (or bilingual). The engine handles this translation and structuring simultaneously.
+4. The Safety & Pathway Engine
+Before the doctor sees the note, the Safety Engine runs a parallel check against pre-defined clinical rules.
+Red Flags: If the AI detects symptoms like "chest pain" or "sudden vision loss," it triggers an Amber/Red alert in the UI.
+Clinical Pathways: It suggests the next steps based on the top 6 GCC clinical complaints (e.g., Vitamin D deficiency protocols).
+5. The Insurance & Persistence Layer
+Once the doctor reviews and edits the note, the Insurance Assistant uses the finalized SOAP data to:
+Draft Narratives: Create the justification text needed for insurance pre-authorization.
+Audit Trail: The Audit Logging Service records exactly what the AI suggested vs. what the doctor changed. This provides the "Regulatory Protection Layer" mentioned in your scope, protecting the doctor in case of disputes.
+Final Storage: The signed note is saved in Azure PostgreSQL, ready to be viewed in the "Past History" tab.
+1.2 Data Residency Compliance
+Note: To comply with UAE Federal Law on ICT in Healthcare:
+No external LLM APIs: All models must be hosted within the Azure UAE North subscription.
+Zero Leakage: No clinical data or audio may exit the UAE geography for processing.
+Audit Logging: Mandatory timestamped logs of every AI action and doctor edit.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+High Level System Architecture Diagram:
+
+
+UML Sequence Diagram:
+
+
+
+
+
+Functional Flow Diagram:
+
+
+
+
+2. 6-Week Technical Delivery Plan (Accelerated)
+Week 1: Foundation & Environment Setup
+Infrastructure: Provisioning Azure UAE resources. Set up CI/CD pipelines.
+Auth Layer: Implementation of Doctor Login & Consent Screen (Mandatory legal disclosure on AI use).
+Backend: Database schema design for Patient visits, Audio logs, and Audit trails.
+Week 2: Audio Capture & Arabic ASR
+Frontend: Development of the Recorder UI (Start/Pause/Stop/Timer).
+AI Integration: Deployment of the Arabic ASR (Speech-to-Text) pipeline.
+Deliverable: Doctor can record a session and see a raw Arabic transcript.
+Week 3 & 4: SOAP Builder & Clinical Logic
+AI Integration: Development of the Transcript → SOAP transformation logic.
+Frontend: The SOAP Builder Module (Subjective, Objective, Assessment, Plan) with editable fields.
+UI Feature: Implementation of the "AI Explanation" side panel for clinical transparency.
+Week 5: Safety Engine & Regulatory Protection
+Safety Logic: Integration of Red Flag alerts and clinical pathway suggestions (top 6 complaints).
+Compliance: Development of the Audit & AI Log (Hidden system). Every AI action and doctor edit is timestamped for regulatory protection.
+Security: Final VAPT (Vulnerability Assessment) on the Azure environment.
+Week 6: Insurance Assistant & Pilot Readiness
+Insurance Engine: Automation of Claim Narratives and Pre-auth Drafts based on the SOAP data.
+Optimization: Final UI/UX polish (Doctor Speed > Beauty).
+Pilot Launch: Onboarding first clinic for Pilot #1.
+
+
+
+
+
+
+Execution Ownership & Weekly Milestones
+This table locks in the "Build Mode" responsibilities and checkpoints 21212121.
+
+Executive Governance: Founder Approval Gates
+To ensure rigorous oversight, the project adheres to a formal Founder Approval Gate protocol. Approval is required at the end of each weekly demo before moving to the next phase.
+Gate 1: Weekly Review: Each week (1-5) concludes with a technical demo and performance audit against success metrics.
+Gate 2: AI/ML Integration: Explicit CTO sign-off is required before the AI/ML Engineer integrates new clinical pathways or modifies "Red Flag" logic.
+Gate 3: Infrastructure Scaling: The CTO must obtain authorization before scaling production compute or increasing Azure UAE service tiers.
+Gate 4: Pilot "Go/No-Go": Final approval is required following the Week 4 VAPT (Vulnerability Assessment) before launching Pilot #1
+
+
+3. Roles & Responsibilities
+
+
+4. MVP Modules & UI Specifications
+4.1 Insurance Assistant (V1)
+The Insurance Assistant is a core differentiator of NABDH, designed to automate the administrative burden of financial justification while reducing claim rejection risks.
+A. Scope of Features:
+Trigger Condition: This module becomes active and visible in the UI only after the physician has finalized and "signed off" on the SOAP note.
+Pre-authorization & Claim Narratives: * The system uses the "Assessment" and "Plan" sections to generate an automated Pre-auth Justification draft.
+It transforms clinical findings into a concise Claim Narrative intended for insurance reviewers.
+Missing-Item Checklist: * A rule-based validation engine checks the SOAP note against mandatory data points required by major insurers (e.g., symptom duration, specific vital signs for certain diagnoses).
+Visual Risk Indicators (Color Coding):
+Green (Ready): All mandatory insurance fields are detected; documentation strongly supports the requested service.
+Amber (Incomplete): Minor clinical justifications are missing that could lead to a request for more information (RFI).
+Red (High Rejection Risk): Significant clinical evidence is missing for the suggested plan, or there is a mismatch between the assessment and the requested pre-auth.
+B. Logic and Rules:
+Contextual Mapping: The engine applies simplified logic for the top 6 GCC clinical complaints to identify missing narrative items.
+Out-of-Scope for V1: Direct API integration with insurance portals (e-Claims), automated ICD-10/CPT coding from scratch, and real-time eligibility checks.
+C. Pilot Success Metrics:
+Draft Quality: $\ge 80\%$ of AI-generated narratives accepted by physicians without major revision.
+Completeness: 100% of pilot sessions successfully trigger the "Missing Item" checklist before the visit is closed.
+Efficiency: A measurable reduction in total administrative time spent on insurance justification.
+
+4.2 Clinical Validation & Safety Governance
+Safety governance ensures that while the AI assists with documentation, clinical control remains strictly with the physician.
+A. Safety Engine & Red Flag Highlights:
+Real-time Alerts: The Safety Engine monitors the live transcript for high-risk symptoms (e.g., sudden chest pain, neurological deficits).
+UI Indication: These are displayed in the Right Panel of the Clinical Recorder as "Red Flag Highlights" to ensure they are addressed during the encounter.
+Missing Info Prompts: The engine prompts the doctor if critical diagnostic questions associated with a "Red Flag" have not been asked.
+B. Safety Stop Conditions:
+Mandatory Consent: Physicians must clear a login/consent screen acknowledging that the AI is a documentation assistant and that final clinical responsibility remains with the physician.
+Edit Tracking: Every AI-generated suggestion that is modified by a doctor is tracked in the Audit & AI Log. This provides a "Regulatory Protection Layer" that can be exported for safety audits.
+C. Pathway Validation:
+Clinical Guardrails: The AI is constrained by clinical pathways for the top 5-6 GCC complaints (e.g., Diabetes management, Upper Respiratory Infection).
+Governance: These pathways are pre-validated by the Clinical Lead (Dr. Ahmed) to ensure the AI's "Plan" suggestions adhere to local medical standards.
+Edge Case Handling: For complaints outside the top 6, the AI will provide a standard SOAP summary without specific pathway logic to avoid "hallucinating" specialist advice
+
+
+
+5. Success Metrics for MVP & Pilot
+Accuracy: > 80% accuracy on Arabic SOAP note generation.
+Efficiency: > 40% reduction in doctor documentation time.
+Compliance: 100% of data processed within Azure UAE with full audit logs.
+Adoption & Draft Quality (Acceptance Rate): Percentage of AI-generated narratives accepted by physicians without significant modifications (Target: > 70%).
+Turnaround Time: The time taken to generate the initial insurance draft once the SOAP note is confirmed (Target: < 10 seconds).
+
+
+6. Pilot Roadmap
+Pilot #1 (Feb-Mar): NABDH V1 rollout.
+Post-Pilot: Publish safety, validation, and pilot reports to prepare for April-May acquisition.
+
+
+

@@ -1,0 +1,525 @@
+NABDH: MVP Scope Document 
+
+Version: 1.0 December 2025 
+
+Prepared by: Founder
+
+1. MVP Summary (What we are building in 
+the next 6 months) 
+
+NABDH MVP = the GCC’s first Arabic native Clinical AI Layer for doctors, built on: 
+
+●  Doctor Portal V1 
+●  Arabic Clinical AI Engine (audio → transcript → SOAP → summary) 
+●  Safety & Clinical Pathways Engine 
+● 
+●  Compliance Layer (logging, consent, UAE data residency) 
+●  Pilot #1 (Dec–Jan) + Pilot #2 (Feb–Mar) 
+●  Acquisition readiness by April–May 2026 
+
+Insurance Assistant V1 (pre-auth + claim narratives) 
+
+This MVP is NOT: 
+
+●  A patient app 
+●  A full EMR 
+●  A diagnostic engine 
+
+This MVP is laser focused on doctor efficiency, Arabic AI, and insurance automation, which 
+gives us maximum traction with minimum build cost. 
+
+2. MVP Goals (What must be delivered 
+100%) 
+
+By March 2026, NABDH MVP must deliver: 
+
+ 
+ 
+2.1 Core AI Functionality 
+
+●  Arabic speech to text (ASR) 
+●  Transcript → structured SOAP note 
+●  Structured note → doctor summary 
+●  Red flag safety checks 
+●  Clinical pathways for top 5–6 complaints 
+
+2.2 Doctor Portal V1 
+
+●  Login 
+●  Dashboard 
+●  Audio recorder 
+●  Visit notes (AI generated) 
+●  Edit notes 
+●  Safety alerts 
+●  Simple past history view 
+
+2.3 Insurance Assistant V1 
+
+●  Pre-auth justification drafts 
+●  Claim narrative drafts 
+●  Missing-item checklist 
+●  Rejection risk (rule-based) 
+
+2.4 Compliance & Safety 
+
+●  Consent screen 
+●  Privacy disclosure 
+●  Audit logs 
+●  UAE data residency 
+●  Safety stop conditions 
+
+2.5 Pilots 
+
+●  Pilot #1: Base44 CAIC (Dec–Jan) 
+●  Pilot #2: NABDH V1 (Feb–Mar) 
+
+2.6 Acquisition Preparation (April–May) 
+
+●  Final demo 
+●  Pilot report (1 + 2) 
+
+●  Safety + validation report 
+●  Buyer pipeline 
+●  LOIs 
+
+3. Lean Architecture (Azure UAE + Local 
+Model) 
+
+3.1 Infrastructure 
+
+Cloud: Azure UAE Region 
+
+Why: 
+
+●  Complies with UAE healthcare data residency 
+●  Used by Malaffi/M42 
+●  Low latency 
+●  Best for future integrations 
+
+Compute: 
+
+●  1 small compute instance for backend 
+●  1 GPU-backed instance for local inference during development only 
+●  Limit GPU usage to: 
+➝ model testing 
+➝ summary generation 
+➝ accuracy evaluation 
+
+Storage: 
+
+●  Azure Blob 
+●  PostgreSQL 
+
+3.2 AI Architecture 
+
+LLM Model Strategy: 
+
+ 
+ 
+ 
+●  Use a local Arabic clinical model (not external OpenAI/GPT) 
+●  Smaller distilled model for: 
+
+➝ cost control 
+➝ privacy 
+➝ UAE residency 
+
+●  RAG (Retrieval-Augmented Generation) optional for phase 2 
+
+ASR Engine: 
+
+●  Whisper Arabic (localized) 
+
+or 
+
+●  Azure Arabic Speech Service 
+
+Pipeline: 
+
+1.  Audio → ASR 
+2.  ASR → transcript 
+3.  Transcript → structured SOAP 
+4.  SOAP → doctor summary 
+5.  Safety layer checks 
+6.  Save log 
+
+3.3 Backend Architecture 
+
+●  FastAPI or Django 
+●  Microservice architecture (minimal) 
+●  Logging service 
+● 
+●  Notes service 
+●  Authentication 
+
+Insurance service 
+
+3.4 Frontend Architecture 
+
+●  React + Next.js 
+●  Doctor portal, responsive 
+●  Simple + fast (not heavy UI) 
+
+ 
+ 
+ 
+3.5 DevOps 
+
+●  GitHub (repo + branches) 
+●  GitHub Actions (CI/CD) 
+●  Jira for sprint management 
+
+4. MVP Features (Fully Defined Scope 
+—No Scope Creep) 
+
+4.1 Doctor Portal 
+
+Feature 
+
+Required for MVP 
+
+Notes 
+
+Login 
+
+Dashboard 
+
+Audio Recording 
+
+AI SOAP Note 
+
+AI Summary 
+
+Edit Note 
+
+✔ 
+
+✔ 
+
+✔ 
+
+✔ 
+
+✔ 
+
+✔ 
+
+Simple email/password 
+
+Shows today’s visits 
+
+Core feature 
+
+From transcript 
+
+Doctor-facing 
+
+Must-have 
+
+Past History 
+
+✔ (basic) 
+
+V1 only 
+
+ 
+Red Flag Alerts 
+
+✔ 
+
+From safety rules 
+
+Specialty Suggestion 
+
+optional 
+
+Only if fast 
+
+Beautiful UI 
+
+✖ 
+
+Not needed 
+
+4.2 AI Layer 
+
+Feature 
+
+Required? 
+
+Notes 
+
+Arabic ASR 
+
+SOAP Generation 
+
+Summary Generation 
+
+Safety Engine 
+
+Clinical Pathways 
+
+✔ 
+
+✔ 
+
+✔ 
+
+✔ 
+
+✔ 
+
+Whisper or Azure 
+
+Structured format 
+
+Doctor readable 
+
+Hard stop rules 
+
+Top 6 complaints 
+
+Model Fine-tuning 
+
+optional 
+
+Only if needed 
+
+RAG 
+
+optional 
+
+Later 
+
+4.3 Insurance Assistant 
+
+ 
+ 
+Feature 
+
+Required? 
+
+Notes 
+
+Pre-auth Draft 
+
+Claim Narrative 
+
+Missing Item Checklist 
+
+✔ 
+
+✔ 
+
+✔ 
+
+Key selling point 
+
+From SOAP 
+
+Rule-based 
+
+Rejection Risk 
+
+optional 
+
+V1.1 
+
+4.4 Compliance Layer 
+
+Feature 
+
+Required? 
+
+Notes 
+
+Consent 
+
+Privacy Policy 
+
+Audit Logs 
+
+UAE Residency 
+
+Incident Response 
+
+✔ 
+
+✔ 
+
+✔ 
+
+✔ 
+
+✔ 
+
+Simple modal 
+
+Doctor portal 
+
+API-level logs 
+
+Azure UAE 
+
+Minimal protocol 
+
+ 
+DOH Certification 
+
+✖ 
+
+Not required 
+
+5. Out of Scope (to protect the budget & 
+timeline) 
+
+These features must NOT be built before acquisition: 
+
+🚫 Patient App 
+
+🚫 Full EMR system 
+
+🚫 Advanced diagnostic features 
+
+🚫 Hospital integration (Malaffi) 
+
+🚫 Telemedicine 
+
+🚫 Payments 
+
+🚫 Chatbot for patients 
+
+🚫 AI-driven prescriptions 
+
+6. Roles & Responsibilities (MVP Phase 
+Only) 
+
+Founder 
+
+●  Vision 
+●  Roadmap 
+●  Pilots 
+●  Team alignment 
+●  Compliance review 
+●  Quality control 
+
+ 
+ 
+● 
+
+Investor + acquisition preparation 
+
+CTO 
+
+●  Architecture 
+●  Backend 
+●  DevOps 
+●  Security 
+●  Model integration 
+●  Delivery management 
+
+AI/ML Engineer 
+
+●  ASR setup 
+●  LLM integration 
+●  Summary + SOAP logic 
+●  Pathway logic integration 
+●  Evaluation metrics 
+
+Clinical Lead (Dr. Ahmed) 
+
+●  Pathways 
+●  Safety rules 
+●  Clinical validation 
+●  Evaluation of outputs 
+
+Regulatory Advisor (Dr. Salam) 
+
+●  Consent 
+●  Privacy 
+●  Data flow 
+●  Logs 
+● 
+
+Incident response 
+
+UI/UX 
+
+●  Doctor portal screens 
+●  Consistent design system 
+
+ 
+7. Success Metrics (MVP Only) 
+
+Clinical Metrics 
+
+●  ≥ 70% doctor adoption 
+●  ≥ 40% time saved 
+●  ≥ 80% accuracy on SOAP 
+
+Safety Metrics 
+
+●  0 major safety issues 
+●  100% consent usage 
+
+Business Metrics 
+
+●  2 pilot clinics 
+●  5+ buyer discussions 
+●  Web Summit interest pipeline 
+●  Clear acquisition story by May 
+
+8. Budget (Max 35,000 AED) 
+
+Azure UAE: 6,000–8,000 AED 
+
+Dev tools: 1,800–2,400 AED 
+
+Legal/IP: 6,000–8,000 AED 
+
+Pilot logistics: 3,000–4,000 AED 
+
+Design/marketing: 2,000–3,000 AED 
+
+Contingency: 5,000–6,000 AED 
+
+Total: 27,000–33,000 AED 
+
+(Within maximum limit) 
+
+ 
+ 
+9. Timeline (Directly tied to the Roadmap) 
+
+10. Definition of DONE (MVP Ready) 
+
+The MVP is complete only when ALL of the following are true: 
+
+✔ Doctors can record audio 
+
+✔ Transcript appears 
+
+✔ SOAP note generates 
+
+✔ Summary generates 
+
+✔ Red-flag warnings trigger 
+
+✔ Doctor can edit notes 
+
+✔ Insurance draft generates 
+
+✔ All data stored in Azure UAE 
+
+✔ Safety logs work 
+
+✔ Consent screen works 
+
+✔ Pilot #2 runs smoothly 
+
+✔ Pilot report published 
+
+ 
+ 
+ 
+
