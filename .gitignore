@@ -2,6 +2,9 @@
 node_modules/
 dist/
 build/
+docs/
+docs_text/
+
 
 # Logs
 npm-debug.log*
