@@ -32,4 +32,20 @@ exports.seed = async function(knex) {
     { visit_id: visitId, ts: now - 600_000, action: 'insurance_code', user: 'Insurance Engine', detail: 'توليد ترميز ICD-10: I10, Z82.49, E66.9 — ثقة ٩٤٪' },
     { visit_id: visitId, ts: now - 300_000, action: 'close_session', user: 'Audit Service', detail: 'ختم الجلسة — تشفير SHA-256 — نسخ احتياطي UAE' }
   ])
+
+  // Also seed NABDH core tables: doctors, consultations, clinical_notes, insurance_drafts, audit_logs
+  const [docRes] = await knex('doctors').insert({ entra_id: 'seed-ent-1', full_name: 'د. محمد العامري', email: 'dr.mohammed@nmc.ae', license_number: 'LIC-0001' }).returning('doctor_id')
+  const doctorId = Array.isArray(docRes) ? (docRes[0].doctor_id ?? docRes[0]) : docRes
+
+  const [consultRes] = await knex('consultations').insert({ doctor_id: doctorId, patient_mrn_hash: 'hash-demo-1', consent_obtained: true }).returning('consultation_id')
+  const consultationId = Array.isArray(consultRes) ? (consultRes[0].consultation_id ?? consultRes[0]) : consultRes
+
+  await knex('clinical_notes').insert({ consultation_id: consultationId, raw_transcript: 'الطبيب: صباح الخير ...', soap_subjective: 'مريضة تبلغ من العمر ٣٨ عاماً...', soap_objective: 'ضغط الدم: ١٦٢/١٠٢...', soap_assessment: 'I10', soap_plan: 'أملوديبين ٥ملغ' })
+
+  await knex('insurance_drafts').insert({ consultation_id: consultationId, claim_narrative: 'تراجع المريضة...', pre_auth_justification: 'ارتفاع ضغط الدم متوافق مع...', suggested_icd10_codes: JSON.stringify(['I10']), risk_score: 18 })
+
+  await knex('audit_logs').insert([
+    { consultation_id: consultationId, doctor_id: doctorId, action_type: 'open_record', previous_value: null, new_value: JSON.stringify({ note: 'opened' }), timestamp: now - 3600_000 },
+    { consultation_id: consultationId, doctor_id: doctorId, action_type: 'soap_generated', previous_value: null, new_value: JSON.stringify({ note: 'generated' }), timestamp: now - 1200_000 }
+  ])
 }
